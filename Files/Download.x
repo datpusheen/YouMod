@@ -2369,10 +2369,12 @@ static char YouModShortsDownloadButtonTargetKey;
 static __weak UIButton *YouModActiveShortsDownloadButton;
 static __weak UIView *YouModActiveShortsDownloadContainer;
 
-void YouModAttachShortsDownloadButtonToViewController(UIViewController *controller) {
-    if (!controller || !controller.isViewLoaded) return;
+void YouModAttachShortsDownloadButtonToViewController(id controller) {
+    if (![controller isKindOfClass:UIViewController.class]) return;
+    UIViewController *viewController = (UIViewController *)controller;
+    if (!viewController.isViewLoaded) return;
 
-    UIView *container = controller.view;
+    UIView *container = viewController.view;
     UIButton *button = objc_getAssociatedObject(container, &YouModShortsDownloadButtonKey);
     if (!IS_ENABLED(DownloadManager) || IS_ENABLED(HideDownloadButton)) {
         [button removeFromSuperview];

@@ -1,6 +1,6 @@
 #import "Headers.h"
 
-extern void YouModAttachShortsDownloadButtonToViewController(UIViewController *controller);
+extern void YouModAttachShortsDownloadButtonToViewController(id controller);
 
 // Enables shorts quality - works best with YTClassicVideoQuality
 %hook YTHotConfig
