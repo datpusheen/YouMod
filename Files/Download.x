@@ -1478,15 +1478,31 @@ static UIViewController *YouModPresenterForSender(UIView *sender, YTPlayerViewCo
     return YouModTopViewController(presenter);
 }
 
-static YTPlayerViewController *YouModPlayerFromViewController(UIViewController *vc) {
+static YTPlayerViewController *YouModFindPlayerInViewController(UIViewController *vc) {
+    if (!vc) return nil;
     Class playerClass = NSClassFromString(@"YTPlayerViewController");
+    if (playerClass && [vc isKindOfClass:playerClass]) return (YTPlayerViewController *)vc;
+
+    id player = YouModObjectFromSelector(vc, @selector(playerViewController));
+    if (playerClass && [player isKindOfClass:playerClass]) return (YTPlayerViewController *)player;
+
+    for (UIViewController *child in vc.childViewControllers) {
+        YTPlayerViewController *childPlayer = YouModFindPlayerInViewController(child);
+        if (childPlayer) return childPlayer;
+    }
+    return nil;
+}
+
+static YTPlayerViewController *YouModPlayerFromViewController(UIViewController *vc) {
     UIViewController *cursor = vc;
     while (cursor) {
-        if (playerClass && [cursor isKindOfClass:playerClass]) return (YTPlayerViewController *)cursor;
-        id player = YouModObjectFromSelector(cursor, @selector(playerViewController));
-        if (playerClass && [player isKindOfClass:playerClass]) return (YTPlayerViewController *)player;
+        YTPlayerViewController *player = YouModFindPlayerInViewController(cursor);
+        if (player) return player;
         cursor = cursor.parentViewController;
     }
+
+    YTPlayerViewController *presentedPlayer = YouModFindPlayerInViewController(YouModTopViewController(vc));
+    if (presentedPlayer) return presentedPlayer;
     return YouModCurrentPlayerViewController;
 }
 
@@ -2334,6 +2350,73 @@ static void YouModShowDownloadManager(YTPlayerViewController *player, UIViewCont
         YouModCopyVideoInfo(player, presenter);
     }]];
     YouModPresentMenu(YMDL(@"DOWNLOAD_MANAGER_MENU", @"Download manager"), items, presenter, sender);
+}
+
+@interface YouModShortsDownloadButtonTarget : NSObject
+- (void)youModShortsDownloadButtonTapped:(UIButton *)sender;
+@end
+
+@implementation YouModShortsDownloadButtonTarget
+- (void)youModShortsDownloadButtonTapped:(UIButton *)sender {
+    UIViewController *presenter = YouModPresenterForSender(sender, YouModCurrentPlayerViewController);
+    YTPlayerViewController *player = YouModPlayerFromViewController(presenter);
+    YouModShowDownloadManager(player, presenter, sender);
+}
+@end
+
+static char YouModShortsDownloadButtonKey;
+static char YouModShortsDownloadButtonTargetKey;
+static __weak UIButton *YouModActiveShortsDownloadButton;
+static __weak UIView *YouModActiveShortsDownloadContainer;
+
+void YouModAttachShortsDownloadButtonToViewController(UIViewController *controller) {
+    if (!controller || !controller.isViewLoaded) return;
+
+    UIView *container = controller.view;
+    UIButton *button = objc_getAssociatedObject(container, &YouModShortsDownloadButtonKey);
+    if (!IS_ENABLED(DownloadManager) || IS_ENABLED(HideDownloadButton)) {
+        [button removeFromSuperview];
+        [YouModActiveShortsDownloadButton removeFromSuperview];
+        objc_setAssociatedObject(container, &YouModShortsDownloadButtonKey, nil, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+        objc_setAssociatedObject(container, &YouModShortsDownloadButtonTargetKey, nil, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+        YouModActiveShortsDownloadButton = nil;
+        YouModActiveShortsDownloadContainer = nil;
+        return;
+    }
+
+    if (YouModActiveShortsDownloadButton && YouModActiveShortsDownloadButton != button && YouModActiveShortsDownloadContainer != container) {
+        [YouModActiveShortsDownloadButton removeFromSuperview];
+    }
+
+    if (!button) {
+        button = [UIButton buttonWithType:UIButtonTypeCustom];
+        button.accessibilityIdentifier = @"youmod.shorts.download.button";
+        button.accessibilityLabel = YMDL(@"DOWNLOAD_MANAGER", @"Download Manager");
+        button.tintColor = UIColor.whiteColor;
+        button.backgroundColor = [UIColor colorWithWhite:0.0 alpha:0.42];
+        button.layer.cornerRadius = 22.0;
+        button.clipsToBounds = YES;
+        button.contentEdgeInsets = UIEdgeInsetsMake(10.0, 10.0, 10.0, 10.0);
+        [button setImage:YouModIconImage(57) forState:UIControlStateNormal];
+
+        YouModShortsDownloadButtonTarget *target = [YouModShortsDownloadButtonTarget new];
+        [button addTarget:target action:@selector(youModShortsDownloadButtonTapped:) forControlEvents:UIControlEventTouchUpInside];
+        objc_setAssociatedObject(container, &YouModShortsDownloadButtonTargetKey, target, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+        objc_setAssociatedObject(container, &YouModShortsDownloadButtonKey, button, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+        [container addSubview:button];
+    } else if (button.superview != container) {
+        [container addSubview:button];
+    }
+
+    CGFloat size = 44.0;
+    UIEdgeInsets safeInsets = container.safeAreaInsets;
+    CGFloat x = CGRectGetWidth(container.bounds) - safeInsets.right - size - 12.0;
+    CGFloat y = safeInsets.top + 72.0;
+    button.frame = CGRectMake(MAX(12.0, x), MAX(safeInsets.top + 12.0, y), size, size);
+    button.hidden = NO;
+    [container bringSubviewToFront:button];
+    YouModActiveShortsDownloadButton = button;
+    YouModActiveShortsDownloadContainer = container;
 }
 
 void YouModConfigureDownloadButton(_ASDisplayView *view) {

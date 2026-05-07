@@ -1,5 +1,7 @@
 #import "Headers.h"
 
+extern void YouModAttachShortsDownloadButtonToViewController(UIViewController *controller);
+
 // Enables shorts quality - works best with YTClassicVideoQuality
 %hook YTHotConfig
 - (BOOL)enableOmitAdvancedMenuInShortsVideoQualityPicker { return IS_ENABLED(EnablesShortsQuality) ? YES : %orig; }
@@ -12,16 +14,46 @@
 
 // Always show Shorts seekbar
 %hook YTShortsPlayerViewController
+- (void)viewDidAppear:(BOOL)animated {
+    %orig;
+    YouModAttachShortsDownloadButtonToViewController(self);
+}
+
+- (void)viewDidLayoutSubviews {
+    %orig;
+    YouModAttachShortsDownloadButtonToViewController(self);
+}
+
 - (BOOL)shouldAlwaysEnablePlayerBar { return IS_ENABLED(ShowShortsSeekbar) ? YES : %orig; }
 - (BOOL)shouldEnablePlayerBarOnlyOnPause { return IS_ENABLED(ShowShortsSeekbar) ? NO : %orig; }
 %end
 
 %hook YTReelPlayerViewController
+- (void)viewDidAppear:(BOOL)animated {
+    %orig;
+    YouModAttachShortsDownloadButtonToViewController(self);
+}
+
+- (void)viewDidLayoutSubviews {
+    %orig;
+    YouModAttachShortsDownloadButtonToViewController(self);
+}
+
 - (BOOL)shouldAlwaysEnablePlayerBar { return IS_ENABLED(ShowShortsSeekbar) ? YES : %orig; }
 - (BOOL)shouldEnablePlayerBarOnlyOnPause { return IS_ENABLED(ShowShortsSeekbar) ? NO : %orig; }
 %end
 
 %hook YTReelPlayerViewControllerSub
+- (void)viewDidAppear:(BOOL)animated {
+    %orig;
+    YouModAttachShortsDownloadButtonToViewController(self);
+}
+
+- (void)viewDidLayoutSubviews {
+    %orig;
+    YouModAttachShortsDownloadButtonToViewController(self);
+}
+
 - (BOOL)shouldAlwaysEnablePlayerBar { return IS_ENABLED(ShowShortsSeekbar) ? YES : %orig; }
 - (BOOL)shouldEnablePlayerBarOnlyOnPause { return IS_ENABLED(ShowShortsSeekbar) ? NO : %orig; }
 %end
