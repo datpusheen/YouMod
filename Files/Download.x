@@ -224,7 +224,8 @@ static NSString *YouModYouTubeCookiesString(void) {
 
 static NSString *YouModNativeUserAgent(void) {
     NSString *version = @"21.17.3";
-    NSString *sysVersion = [[UIDevice currentDevice].systemVersion stringByReplacingOccurrencesOfString:@"." withString:@"_"] ?: @"26_4"];
+    NSString *deviceSystemVersion = [UIDevice currentDevice].systemVersion;
+    NSString *sysVersion = [deviceSystemVersion stringByReplacingOccurrencesOfString:@"." withString:@"_"] ?: @"26_4";
     return [NSString stringWithFormat:@"com.google.ios.youtube/%@ (iPhone; CPU iPhone OS %@ like Mac OS X)", version, sysVersion];
 }
 
