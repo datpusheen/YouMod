@@ -19,11 +19,6 @@ extern void YouModAttachShortsDownloadButtonToViewController(id controller);
     YouModAttachShortsDownloadButtonToViewController((id)self);
 }
 
-- (void)viewDidLayoutSubviews {
-    %orig;
-    YouModAttachShortsDownloadButtonToViewController((id)self);
-}
-
 - (BOOL)shouldAlwaysEnablePlayerBar { return IS_ENABLED(ShowShortsSeekbar) ? YES : %orig; }
 - (BOOL)shouldEnablePlayerBarOnlyOnPause { return IS_ENABLED(ShowShortsSeekbar) ? NO : %orig; }
 %end
@@ -34,22 +29,12 @@ extern void YouModAttachShortsDownloadButtonToViewController(id controller);
     YouModAttachShortsDownloadButtonToViewController((id)self);
 }
 
-- (void)viewDidLayoutSubviews {
-    %orig;
-    YouModAttachShortsDownloadButtonToViewController((id)self);
-}
-
 - (BOOL)shouldAlwaysEnablePlayerBar { return IS_ENABLED(ShowShortsSeekbar) ? YES : %orig; }
 - (BOOL)shouldEnablePlayerBarOnlyOnPause { return IS_ENABLED(ShowShortsSeekbar) ? NO : %orig; }
 %end
 
 %hook YTReelPlayerViewControllerSub
 - (void)viewDidAppear:(BOOL)animated {
-    %orig;
-    YouModAttachShortsDownloadButtonToViewController((id)self);
-}
-
-- (void)viewDidLayoutSubviews {
     %orig;
     YouModAttachShortsDownloadButtonToViewController((id)self);
 }

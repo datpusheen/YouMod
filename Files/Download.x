@@ -2398,6 +2398,7 @@ void YouModAttachShortsDownloadButtonToViewController(id controller) {
         button.backgroundColor = [UIColor colorWithWhite:0.0 alpha:0.42];
         button.layer.cornerRadius = 22.0;
         button.clipsToBounds = YES;
+        button.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleBottomMargin;
         button.contentEdgeInsets = UIEdgeInsetsMake(10.0, 10.0, 10.0, 10.0);
         [button setImage:YouModIconImage(57) forState:UIControlStateNormal];
 
