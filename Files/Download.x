@@ -2115,12 +2115,13 @@ static void YouModPresentMenu(NSString *title, NSArray <YouModMenuItem *> *items
 
     BOOL canSaveToPhotos = isVideo && YouModVideoFileCanSaveToPhotos(fileURL);
     if (isVideo && IS_ENABLED(DownloadSaveToPhotos) && canSaveToPhotos) {
-        [self cleanupTemporaryFiles];
         YouModSaveVideoToPhotos(fileURL, presenter, ^(BOOL success, NSError *error) {
+            [self cleanupTemporaryFiles];
             if (success) {
                 YouModSendToast(@"Saved to Photos", presenter);
             } else {
                 YouModSendToast(error.localizedDescription ?: YMDL(@"DOWNLOAD_CANNOT_SAVE_PHOTOS", @"Cannot save to Photos"), presenter);
+                YouModShareFile(fileURL, presenter);
             }
         });
     } else {
