@@ -1,4 +1,4 @@
-# YouMod
+# PiTube
 A tweak that's try to recreate features like in YTLite as much as possible. Contributors are welcome! ^^
 
 Thanks for 200 stars and forks! This might be the best project I've done.
