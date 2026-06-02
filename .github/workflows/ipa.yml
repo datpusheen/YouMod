@@ -38,6 +38,12 @@ on:
         required: false
         type: boolean
 
+      isponsorblock:
+        description: "Integrate iSponsorBlock"
+        default: true
+        required: false
+        type: boolean
+
       abconfig:
         description: "Integrate YTABConfig"
         default: true
@@ -119,7 +125,7 @@ jobs:
       - name: Hide Sensitive Inputs
         uses: levibostian/action-hide-sensitive-inputs@v1
         with:
-          exclude_inputs: bundle_id,display_name,youpip,ytuhd,ryd,abconfig,youquality,youspeed,youloop,ytweaks,youslider,ytholdspeed,youchoose,youshare,getcap,demc
+          exclude_inputs: bundle_id,display_name,youpip,ytuhd,ryd,isponsorblock,abconfig,youquality,youspeed,youloop,ytweaks,youslider,ytholdspeed,youchoose,youshare,getcap,demc
           
       - name: Download and Validate IPA
         run: |
@@ -230,6 +236,10 @@ jobs:
         if: ${{ inputs.ryd }}
         run: git clone --quiet --depth=1 https://github.com/PoomSmart/Return-YouTube-Dislikes.git
 
+      - name: Clone iSponsorBlock
+        if: ${{ inputs.isponsorblock }}
+        run: git clone --quiet --depth=1 --recurse-submodules --shallow-submodules https://github.com/Galactic-Dev/iSponsorBlock.git
+
       - name: Clone YouGroupSettings
         run: git clone --quiet --depth=1 https://github.com/PoomSmart/YouGroupSettings.git
            
@@ -263,14 +273,14 @@ jobs:
 
       - name: Cache Alderis
         id: cache-alderis
-        if: ${{ inputs.youslider }}
+        if: ${{ inputs.youslider || inputs.isponsorblock }}
         uses: actions/cache@v5
         with:
           path: Alderis
           key: Alderis-${{ env.ALDERIS_COMMIT }}
 
       - name: Clone Alderis
-        if: ${{ inputs.youslider && steps.cache-alderis.outputs.cache-hit != 'true' }}
+        if: ${{ (inputs.youslider || inputs.isponsorblock) && steps.cache-alderis.outputs.cache-hit != 'true' }}
         run: git clone --quiet --depth=1 https://github.com/hbang/Alderis.git
 
       - name: Clone YTHoldForSpeed
@@ -320,6 +330,13 @@ jobs:
           cd Return-YouTube-Dislikes
           make clean package DEBUG=0 FINALPACKAGE=1 THEOS_PACKAGE_SCHEME=rootless
           mv packages/*.deb ${{ github.workspace }}/ryd.deb
+
+      - name: Build iSponsorBlock
+        if: ${{ inputs.isponsorblock }}
+        run: |
+          cd iSponsorBlock
+          make clean package DEBUG=0 FINALPACKAGE=1 THEOS_PACKAGE_SCHEME=rootless
+          mv packages/*.deb ${{ github.workspace }}/isponsorblock.deb
 
       - name: Build YouGroupSettings
         run: |
@@ -377,7 +394,7 @@ jobs:
           mv packages/*.deb ${{ github.workspace }}/youslider.deb
 
       - name: Build Alderis
-        if: ${{ inputs.youslider }}
+        if: ${{ inputs.youslider || inputs.isponsorblock }}
         run: |
           cd Alderis
           make clean package DEBUG=0 FINALPACKAGE=1 ARCHS=arm64
